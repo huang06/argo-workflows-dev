@@ -1,0 +1,39 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: jetson-inference-
+  labels:
+    workflows.argoproj.io/archive-strategy: "false"
+spec:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+  entrypoint: app
+  templates:
+    - name: app
+      inputs: {}
+      outputs: {}
+      metadata: {}
+      container:
+        image: docker.io/dustynv/jetson-inference:r32.5.0
+        command: []
+        args:
+          - "/bin/bash"
+          - "-c"
+          - "echo hello-world"
+        resources: {}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: edge/role
+                    operator: In
+                    values:
+                      - edge-node
+      tolerations:
+        - effect: NoExecute
+          key: edge/role
+          operator: Equal
+          value: edge-node
